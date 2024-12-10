@@ -1,8 +1,7 @@
 Welcome to StudyStracker website!
 
 The purpose of this webiste is to help students manage and organize their time and acedemic tasks.
-We created a mock database using JavaScript. You need to download the zip and enter preferably The home.html file however you can enter any page as you can navigate throuth the page easily.
-
+We created a database using Mongodb. You can use the deployment (Vercel) link for ease of use, Start by making an account and then signing in, you will then be presented with the home page.
 
 The home Page:  
     it's where student can check list their tasks, once you enter the page you will see an interactive calendar and the default selected date is today's date, however you can also select other dates, choose the 9th of Novemeber 2024 so you can see the functionality of the todo check list.
