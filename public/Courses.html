@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses</title>
+    <link rel="stylesheet" href="webPageStyle_general.css">
+    <script src="api.js"></script>
+    <script>verifyIfLoggedIn()</script>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="sidebar">
+            <a href="EditAccount.html"><img src="userAvatar.png" alt="User Avatar"></a>
+            <p id="user-greeting"></p>
+            <div class="sidebar-menu">
+                <a href="Home.html"><div class="menu-item">Home</div></a>
+                <a href="Calendar.html"><div class="menu-item">Calendar</div></a>
+                <div class="menu-item active">Courses</div>
+            </div>
+        </div>
+
+        
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="search-bar">
+                    <input id="search-input" type="text" placeholder="Course Name">
+                </div>
+                <div class="top-icons button:hover">
+                    <a href="Settings.html">
+                        <img src="SettingIcon.png" alt="Settings Icon" class="top-icons img">
+                    </a>
+                    <a href="#">
+                        <img src="NotificationIcon.png" alt="Notifications Icon" class="top-icons img" onclick="showNotifications()">
+                    </a>
+                </div>
+            </div>
+
+            
+            <div class="courses-section">
+                <h2>Courses</h2>
+                <div class="course-list" id="courseList"></div>
+                <div class="buttons">
+                    <button class="button" onclick="location.href='AddCourse.html'">+ Add Course</button>
+                    <button class="button" onclick="toggleEditMode()">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="notificationModal" class="modal">
+        <div class="modal-content">
+            <h2>Today's Tasks</h2>
+            <div id="notificationTasks"></div>
+            <button onclick="closeNotificationModal()">Close</button>
+        </div>
+    </div>
+
+    <script src="database.js"></script>
+    <script>
+        setGreetingMsg();
+
+        async function showNotifications() {
+            const today = new Date().toISOString().split('T')[0];
+            const notificationTasks = document.getElementById('notificationTasks');
+            notificationTasks.innerHTML = '';
+
+            let tasksFound = false;
+
+            let events = [];
+            const response = await getEvents();
+            if (response && response.events) {
+                events = response.events;
+            }
+
+            events.forEach(event => {
+                if (event.date === today && !event.completed) {
+                    tasksFound = true;
+                    const taskElement = document.createElement('div');
+                    taskElement.innerHTML = `<strong>${event.course.courseId} (${event.course.courseName}):</strong> ${event.name}`;
+                    notificationTasks.appendChild(taskElement);
+                }
+            });
+
+            if (!tasksFound) {
+                notificationTasks.innerHTML = "You don't have any tasks for today.";
+            }
+
+            document.getElementById('notificationModal').style.display = 'block';
+        }
+
+        function closeNotificationModal() {
+            document.getElementById('notificationModal').style.display = 'none';
+        }
+
+        
+        document.getElementById("search-input").addEventListener("change", function(e) {
+            loadCourses(e.target.value);
+        });
+
+        let editMode = false;
+        let courses = [];
+
+        async function loadCourses(searchQuery) {
+            const courseList = document.getElementById('courseList');
+            courseList.innerHTML = '';
+
+            if (!searchQuery) {
+                const response = await getCourses();
+                courses = response.courses;
+            } else {
+                // Filter courses
+                courses = courses.filter(course => course.courseName.toLowerCase().includes(searchQuery))
+            }
+
+            courses.forEach(course => {
+                const courseItem = document.createElement('div');
+                courseItem.classList.add('course-item');
+                courseItem.innerHTML = `
+                    <div>
+                        <span style="color: ${course.color}">${course.courseId}</span> (${course.courseName})<br>
+                        Credit: ${course.credit}
+                    </div>
+                    <span>Term: ${course.term}</span>
+                `;
+
+                if (editMode) {
+                    const actions = document.createElement('div');
+                    actions.classList.add('action-buttons');
+
+                    const modifyBtn = document.createElement('button');
+                    modifyBtn.classList.add('modify-btn');
+                    modifyBtn.textContent = 'Modify';
+                    modifyBtn.onclick = () => modifyCourse(course._id);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.classList.add('delete-btn');
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.onclick = () => deleteCourse(course._id);
+
+                    actions.appendChild(modifyBtn);
+                    actions.appendChild(deleteBtn);
+                    courseItem.appendChild(actions);
+                }
+
+                courseList.appendChild(courseItem);
+            });
+        }
+
+        function toggleEditMode() {
+            editMode = !editMode;
+            loadCourses();
+        }
+
+        async function deleteCourse(courseID) {
+            alert("Are you sure you want to delete?");
+            await handleDeleteCourse(courseID);
+            loadCourses();
+        }
+
+        function modifyCourse(courseID) {
+            localStorage.setItem('courseToModify', courseID);
+            window.location.href = 'ModifyCourse.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => loadCourses());
+    </script>
+</body>
+</html>

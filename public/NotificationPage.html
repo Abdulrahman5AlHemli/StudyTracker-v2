@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification settings</title>
+    <link rel = "stylesheet" href = 'webPageStyle_general.css'>
+    <script src="api.js"></script>
+    <script>verifyIfLoggedIn()</script>
+</head>
+    <body>
+        <div class="container">
+            
+            <div class="sidebar">
+                <a href="EditAccount.html"><img src="userAvatar.png" alt="User Avatar"></a>
+                <p id="user-greeting"></p>
+                <div class="sidebar-menu">
+                    <a href="Home.html"><div class="menu-item">Home</div></a>
+                    <a href="Calendar.html"><div class="menu-item">Calendar</div></a>
+                    <a href=Courses.html><div class="menu-item">Courses</div></a>
+                </div>
+            </div>
+            
+            <div class="main-content" style="justify-content: center; align-items: center; display: flex;">
+        <div class="form-container" style="background-color:#1d1d1d; box-shadow:none; " >
+            <h2 id="EAtitle"> Notification </h2>
+            <form action="">
+                        <label for="WhatsappNO">Whatsapp:</label>
+                        <input type="number" name="WhatsappNO"  class="numberField">
+                        
+                        <label class="switch">
+                            <input type="checkbox">
+                            <span class="slider round"></span>
+                        </label>
+                        <br>
+                        <label for="TelegramNO">Telegram:</label>
+                        <input type="number" name="TelegramNO"  class="numberField">
+                        <!-- Rounded switch -->
+                        <label class="switch">
+                            <input type="checkbox">
+                            <span class="slider round"></span>
+                        </label>
+                        <br>
+                        <label for="email">Email:</label>
+                        <input type="email" name="email" id="email">
+                        <!-- Rounded switch -->
+                        <label class="switch">
+                            <input type="checkbox">
+                            <span class="slider round"></span>
+                        </label>
+                        <br><br>
+                            <button type="button" class="MDbutton MDcancel-button" style="margin-right: 50%;" onclick='window.location.href="Settings.html"'>Cancel</button>
+                            <button type="button" class="MDbutton" >Save</button> 
+                        </div>
+                </form>
+        </div>
+
+        <script>
+            setGreetingMsg();
+        </script>
+    </body>

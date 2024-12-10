@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <link rel = 'stylesheet' href= 'webPageStyle_general.css'>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="sidebar">
+            <a href="EditAccount.html"><img src="userAvatar.png" alt="User Avatar"></a>
+            <p id="user-greeting"></p>
+            <div class="sidebar-menu">
+                <a href='Home.html'><div class="menu-item">Home</div></a>
+                <a href="Calendar.html"><div class="menu-item">Calendar</div></a>
+                <a href='Courses.html'><div class="menu-item">Courses</div></a>
+            </div>
+        </div>
+        
+        <div class="main-content">
+        
+         <div class="settings">
+            <h1 id="settingsTitle"> Settings </h1>
+            <section class="settingsbuttons">
+                <button class="MDbutton" onclick='window.location.href="EditAccount.html"'>Edit Account</button>
+                <button class="MDbutton" onclick='window.location.href="NotificationPage.html"'>Notification</button>
+                <button class="MDbutton" onclick="signOut()">Sign out</button>
+        </section>
+    </div>
+
+    <script>
+        function signOut() {
+            localStorage.clear();
+            window.location.href = "Signin.html"
+        }
+    </script>
+</body>

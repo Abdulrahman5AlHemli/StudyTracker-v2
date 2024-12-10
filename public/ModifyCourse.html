@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modify Course</title>
+    <link rel= 'stylesheet' href='webPageStyle_general.css'>
+    <script src="api.js"></script>
+    <script>verifyIfLoggedIn()</script>
+</head>
+<body class = "formBodyEl">
+    <div id = 'MDform-container'class="form-container">
+        <h2>Modify Course</h2>
+        <form id="modifyCourseForm">
+            <label for="courseID">Course ID:</label>
+            <input type="text" id="courseID" readonly>
+
+            <label for="courseName">Course Name:</label>
+            <input type="text" id="courseName" required>
+
+            <label for="credit">Credit:</label>
+            <input type="number" id="credit" min="1" max="5" required>
+
+            <label for="term">Term:</label>
+            <input type="text" id="term" required>
+
+            <label for="color">Color (Hex):</label>
+            <input id="color" type="color" class="color" required>
+
+            <div class="MDbuttons">
+                <button type="button" class="MDbutton MDcancel-button" onclick="window.location.href='Courses.html'">Cancel</button>
+                <button type="submit" class="MDbutton">Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="database.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const courseID = localStorage.getItem('courseToModify');
+            // const course = db.get(courseID);
+            const course = await getCourseById(courseID);
+            
+
+            document.getElementById('courseID').value = course.courseId;
+            document.getElementById('courseName').value = course.courseName;
+            document.getElementById('credit').value = course.credit;
+            document.getElementById('term').value = course.term;
+            document.getElementById('color').defaultValue = course.color;
+        });
+
+        document.getElementById('modifyCourseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const courseID = document.getElementById('courseID').value;
+            const courseName = document.getElementById('courseName').value;
+            const credit = document.getElementById('credit').value;
+            const term = document.getElementById('term').value;
+            const color = document.getElementById('color').value;
+
+            const newCourse = {
+                _id: localStorage.getItem('courseToModify'),
+                courseId: courseID,
+                courseName,
+                credit: Number(credit),
+                term,
+                color,
+            };
+
+            const response = await updateCourse(newCourse);
+            window.location.href = 'Courses.html';
+        });
+    </script>
+</body>
+</html>

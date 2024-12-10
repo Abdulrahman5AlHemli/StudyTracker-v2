@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendar</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="webPageStyle_general.css">
+    <script src="api.js"></script>
+    <script>verifyIfLoggedIn()</script>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="sidebar">
+            <a href="EditAccount.html"><img src="userAvatar.png" alt="User Avatar"></a>
+            <p id="user-greeting"></p>
+            <div class="sidebar-menu">
+                <a href="Home.html"><div class="menu-item">Home</div></a>
+                <div class="menu-item active">Calendar</div>
+                <a href="Courses.html"><div class="menu-item">Courses</div></a>
+            </div>
+        </div>
+
+       
+        <div class="main-content">
+            
+            <div class="top-bar">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search">
+                </div>
+                <div class="top-icons button:hover">
+                    <a href="Settings.html">
+                        <img src="SettingIcon.png" alt="Settings Icon" class="top-icons img">
+                    </a>
+                    <a href="#">
+                        <img src="NotificationIcon.png" alt="Notifications Icon" class="top-icons img" onclick="showNotifications()">
+                    </a>
+                </div>
+            </div>
+
+            
+            <div class="calendar-section">
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+
+   
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <h2>Add Event</h2>
+            <form id="eventForm">
+                <label for="eventDate">Date:</label>
+                <input type="text" id="eventDate" name="eventDate" readonly>
+
+                <label for="courseSelect">Course:</label>
+                <select id="courseSelect" name="courseSelect" required>
+                    <option value="">Select Course</option>
+                    <!-- Options will be populated dynamically -->
+                </select>
+
+                <label for="eventType">Event Type:</label>
+                <select id="eventType" name="eventType" required>
+                    <option value="">Select Event Type</option>
+                    <option value="Homework">Homework</option>
+                    <option value="Study Session">Study Session</option>
+                    <option value="Lab Task">Lab Task</option>
+                    <option value="Lecture">Lecture</option>
+                    <option value="Exam">Exam</option>
+                </select>
+
+                <label for="eventName">Event Name:</label>
+                <input type="text" id="eventName" name="eventName" required>
+
+                <label for="eventTime">Time:</label>
+                <input type="time" id="eventTime" name="eventTime" required>
+
+                <div style="text-align: right;">
+                    <button type="button" class="close-button" onclick="closeModal()">Cancel</button>
+                    <button type="submit">Add Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    
+    <div id="notificationModal" class="modal">
+        <div class="modal-content">
+            <h2>Today's Tasks</h2>
+            <div id="notificationTasks"></div>
+            <button onclick="closeNotificationModal()">Close</button>
+        </div>
+    </div>
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="database.js"></script>
+    <script>
+        setGreetingMsg();
+
+        // Fetch courses for user
+        let courses = [];
+        (async function() {
+            const response = await getCourses();
+            if (response && response.courses) {
+                courses = response.courses;
+            }
+        })();
+
+        let calendar;
+        let selectedDate;
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek,dayGridDay'
+                },
+                dateClick: function(info) {
+                    openModal(info.dateStr);
+                },
+                events: loadCalendarEvents()
+            });
+            calendar.render();
+        });
+
+        async function loadCalendarEvents() {
+            let events = [];
+            const response = await getEvents();
+            if  (response && response.events) {
+                events = response.events;
+            }
+            events.forEach(event => {
+                calendar.addEvent({
+                    title: `${event.course.courseId}: ${event.name}`,
+                    start: event.date + 'T' + event.time,
+                    color: event.course.color
+                })
+            });
+        }
+
+        function openModal(dateStr) {
+            selectedDate = dateStr;
+            document.getElementById('eventDate').value = selectedDate;
+
+            const courseSelect = document.getElementById('courseSelect');
+            courseSelect.innerHTML = '<option value="">Select Course</option>';
+            courses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course._id;
+                option.textContent = `${course.courseId} - ${course.courseName}`;
+                courseSelect.appendChild(option);
+            });
+
+            document.getElementById('eventModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('eventForm').reset();
+            document.getElementById('eventModal').style.display = 'none';
+        }
+
+        async function showNotifications() {
+            const today = new Date().toISOString().split('T')[0];
+            const notificationTasks = document.getElementById('notificationTasks');
+            notificationTasks.innerHTML = '';
+
+            let tasksFound = false;
+
+            let events = [];
+            const response = await getEvents();
+            if (response && response.events) {
+                events = response.events;
+            }
+
+            events.forEach(event => {
+                if (event.date === today && !event.completed) {
+                    tasksFound = true;
+                    const taskElement = document.createElement('div');
+                    taskElement.innerHTML = `<strong>${event.course.courseId} (${event.course.courseName}):</strong> ${event.name}`;
+                    notificationTasks.appendChild(taskElement);
+                }
+            });
+
+            if (!tasksFound) {
+                notificationTasks.innerHTML = "You don't have any tasks for today.";
+            }
+
+            document.getElementById('notificationModal').style.display = 'block';
+        }
+
+        function closeNotificationModal() {
+            document.getElementById('notificationModal').style.display = 'none';
+        }
+
+        document.getElementById('eventForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const courseID = document.getElementById('courseSelect').value;
+            const eventType = document.getElementById('eventType').value;
+            const eventName = document.getElementById('eventName').value;
+            const eventTime = document.getElementById('eventTime').value;
+
+            if (!courseID || !eventType || !eventName || !eventTime) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            const newEvent = {
+                date: selectedDate,
+                time: eventTime,
+                name: eventName,
+                type: eventType,
+                completed: false,
+                course: courseID
+            };
+
+            const response = await createEvent(newEvent);
+            if (!response.ok) {
+                // show Error
+                return;
+            }
+            const event = response.data
+
+            calendar.addEvent({
+                title: `${event.course.courseId}: ${eventName}`,
+                start: selectedDate + 'T' + eventTime,
+                color: event.course.color
+            });
+
+            closeModal();
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('eventModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+    </script>
+</body>
+</html>
